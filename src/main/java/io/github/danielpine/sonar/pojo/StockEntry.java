@@ -2,30 +2,47 @@ package io.github.danielpine.sonar.pojo;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.List;
 
 public class StockEntry {
-    enum Type {
-        BUY, SELL;
-    }
+    enum Type {BUY, SELL}
 
-    private Type type;
+    private final Type type;
     private BigDecimal value;
     private BigInteger size;
-    private Integer level;
+    private final Integer level;
 
-    public StockEntry(Type type, BigDecimal value, BigInteger size, Integer level) {
+    public static List<StockEntry> generate() {
+        return Arrays.asList(
+                buy(1),
+                buy(2),
+                buy(3),
+                buy(4),
+                buy(5),
+                sell(1),
+                sell(2),
+                sell(3),
+                sell(4),
+                sell(5)
+        );
+    }
+
+    public static StockEntry buy(Integer level) {
+        return new StockEntry(Type.BUY, level);
+    }
+
+    public static StockEntry sell(Integer level) {
+        return new StockEntry(Type.SELL, level);
+    }
+
+    public StockEntry(Type type, Integer level) {
         this.type = type;
-        this.value = value;
-        this.size = size;
         this.level = level;
     }
 
     public Type getType() {
         return type;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
     }
 
     public BigDecimal getValue() {
@@ -48,7 +65,13 @@ public class StockEntry {
         return level;
     }
 
-    public void setLevel(Integer level) {
-        this.level = level;
+    @Override
+    public String toString() {
+        return "StockEntry{" +
+                "type=" + type +
+                ", value=" + value +
+                ", size=" + size +
+                ", level=" + level +
+                '}';
     }
 }
