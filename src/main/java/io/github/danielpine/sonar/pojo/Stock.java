@@ -2,6 +2,7 @@ package io.github.danielpine.sonar.pojo;
 
 
 import io.github.danielpine.sonar.base.Splitter;
+import lombok.Data;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Data
 public class Stock {
 
     /**

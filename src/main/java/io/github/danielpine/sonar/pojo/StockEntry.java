@@ -1,10 +1,13 @@
 package io.github.danielpine.sonar.pojo;
 
+import lombok.Data;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 
+@Data
 public class StockEntry {
     enum Type {BUY, SELL}
 
