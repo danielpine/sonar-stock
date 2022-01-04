@@ -23,7 +23,7 @@ class SonarStockApplicationTests {
 
     @Test
     void testOne() {
-        System.out.println(priceProvider.one("sz000068"));
+        System.out.println(priceProvider.one("sh600519"));
     }
 
     @Test

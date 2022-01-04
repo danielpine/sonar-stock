@@ -15,6 +15,7 @@ public class StockEntry {
     private BigDecimal value;
     private BigInteger size;
     private final Integer level;
+    private String percent;
 
     public static List<StockEntry> generate() {
         return Arrays.asList(
@@ -75,6 +76,7 @@ public class StockEntry {
                 ", value=" + value +
                 ", size=" + size +
                 ", level=" + level +
+                ", percent='" + percent + '\'' +
                 '}';
     }
 }

@@ -28,10 +28,10 @@ public class Splitter {
     public Map<String, String> splitToMap(final CharSequence sequence) {
         Stack<String> keyStack = new Stack<>();
         keyStack.addAll(keys);
-        return com.google.common.base.Splitter
+        List<String> cols = com.google.common.base.Splitter
                 .on(separator)
-                .splitToStream(sequence)
-                .collect(Collectors.toMap(e -> keyStack.pop(), Function.identity()));
+                .splitToList(sequence).subList(0, 33);
+        return cols.stream().collect(Collectors.toMap(e -> keyStack.pop(), Function.identity()));
     }
 
 }

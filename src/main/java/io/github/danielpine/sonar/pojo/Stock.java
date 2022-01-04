@@ -7,11 +7,9 @@ import lombok.Data;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.security.InvalidKeyException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -77,6 +75,17 @@ public class Stock {
     private static Stock from(Map<String, String> map) {
         Stock stock = new Stock();
         map.forEach(stock::setBy);
+        // 计算量的百分比
+        List<StockEntry> stockEntries = stock.getStockEntries();
+        stockEntries.sort(Comparator.comparing(StockEntry::getSize));
+        StockEntry stockEntry = stockEntries.get(stockEntries.size() - 1);
+        stockEntry.setPercent("100%");
+        BigInteger base = stockEntry.getSize();
+        for (int i = 0; i < stockEntries.size() - 1; i++) {
+            StockEntry entry = stockEntries.get(i);
+            entry.setPercent((int) (entry.getSize().intValue() * 100 / (float) base.intValue()) + "%");
+        }
+        System.out.println(stockEntries);
         return stock;
     }
 
