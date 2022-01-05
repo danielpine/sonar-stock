@@ -3,6 +3,7 @@ package io.github.danielpine.sonar.market;
 import io.github.danielpine.sonar.base.Result;
 import io.github.danielpine.sonar.fetch.PriceProvider;
 import io.github.danielpine.sonar.pojo.Stock;
+import io.github.danielpine.sonar.service.QuotesService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +21,8 @@ public class TradeAreaController {
 
     @Resource
     PriceProvider priceProvider;
+    @Resource
+    QuotesService quotesService;
 
     @GetMapping("/markets")
     @ApiOperation(value = "查询交易区域,以及区域下的市场")

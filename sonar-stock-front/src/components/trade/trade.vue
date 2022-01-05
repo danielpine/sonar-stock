@@ -105,10 +105,10 @@ title {
   z-index: -1;
 }
 .sell-bg {
-  background-color: rgba(199, 32, 32, 0.5);
-}
-.buy-bg {
   background-color: rgba(31, 192, 117, 0.5);
+  }
+.buy-bg {
+  background-color: rgba(199, 32, 32, 0.5);
 }
 .grid-head-stock-name {
   width: 120px;
@@ -584,7 +584,7 @@ export default {
       responsive: true,
       index: 0,
       eventLog: [],
-      currentMarket: { symbol: 'sz000612', title: '华控赛格' }, //当前市场
+      currentMarket: { symbol: 'sz000068', title: '华控赛格' }, //当前市场
       timeStp: 0,
       //选项卡
       turnoverTbData: [], //成交记录
@@ -671,9 +671,11 @@ export default {
     })
   },
   mounted() {
+    this.clearTimer()
     this._getMarkList()
     this.symbol = this.$route.query.symbol
     this._getDepth()
+    this.timer=window.setInterval(this._getDepth,3000)
   },
   destroyed() {
     this.unsubscribeDepths()
@@ -682,8 +684,14 @@ export default {
     this.unsubscribeEntrust()
     this.unsubscribeTurnover()
     this.unsubscribeAllMarkets()
+    this.clearTimer()
   },
   methods: {
+    clearTimer: function () {
+if(this.timer){
+      window.clearInterval(this.timer)
+    }
+    },
     prettierMoney: function (money) {
       if (money < 10000) {
         return money

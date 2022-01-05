@@ -1,10 +1,14 @@
 package io.github.danielpine.sonar;
 
+import com.alibaba.fastjson.JSON;
+import io.github.danielpine.sonar.base.GzipUtils;
 import io.github.danielpine.sonar.converter.SinaHttpMessageConverter;
 import io.github.danielpine.sonar.fetch.PriceProvider;
 import io.github.danielpine.sonar.pojo.Stock;
+import io.github.danielpine.sonar.service.QuotesService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
 
 import javax.annotation.Resource;
@@ -15,6 +19,13 @@ class SonarStockApplicationTests {
 
     @Resource
     PriceProvider priceProvider;
+    @Resource
+    QuotesService quotesService;
+
+    @Test
+    void testBillString() {
+        System.out.println(JSON.toJSONString(quotesService.queryBills("sz000068"), true));
+    }
 
     @Test
     void testString() {
