@@ -1,7 +1,5 @@
 package io.github.danielpine.sonar.fetch;
 
-import io.github.danielpine.sonar.conf.FeignRequestInterceptor;
-import io.github.danielpine.sonar.conf.SinaFeignClientsConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.HttpEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,11 +7,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(
         name = "sina-quotes-service-api",
-        url = "https://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php"
-//        , configuration = {SinaFeignClientsConfiguration.class, FeignRequestInterceptor.class}
-)
+        url = "https://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php")
 public interface QuotesProvider {
-    @GetMapping(value = "/CN_Bill.GetBillList",
+    @GetMapping(
+            value = "/CN_Bill.GetBillList",
             headers = {
                     "method=GET", "authority=vip.stock.finance.sina.com.cn", "scheme=https",
                     "path=/quotes_service/api/json_v2.php/CN_Bill.GetBillList?symbol=sh601006&num=60&page=1&sort=ticktime&asc=0&volume=40000&amount=0&type=0&day=",
