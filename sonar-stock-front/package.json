@@ -25,6 +25,7 @@
     "js-base64": "^2.1.9",
     "js-md5": "^0.7.3",
     "jsonp": "0.2.1",
+    "lightweight-charts": "^3.7.0",
     "lyric-parser": "^1.0.1",
     "net": "^1.0.2",
     "qrcodejs2": "0.0.2",
