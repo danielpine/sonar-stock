@@ -1,3 +1,4 @@
+/* eslint-disable */
 import request from './request'
 
 export const tradeApi = {
@@ -87,10 +88,15 @@ export const tradeApi = {
   // 获取最新成交列表
   getTrades(symbol) {
     return request({
-      url: `/exchange/markets/trades/${symbol}`,
+      url: `/exchange/quotes/bills/${symbol}`,
+      method: 'get',
+    })
+  },
+  // 获取kline
+  getKline(symbol,scale) {
+    return request({
+      url: `/exchange/quotes/kline/${symbol}/${scale}`,
       method: 'get',
     })
   }
-
-
 }

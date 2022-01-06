@@ -1,8 +1,10 @@
 package io.github.danielpine.sonar;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import io.github.danielpine.sonar.base.GzipUtils;
 import io.github.danielpine.sonar.converter.SinaHttpMessageConverter;
+import io.github.danielpine.sonar.fetch.KlineProvider;
 import io.github.danielpine.sonar.fetch.PriceProvider;
 import io.github.danielpine.sonar.pojo.Stock;
 import io.github.danielpine.sonar.service.QuotesService;
@@ -21,6 +23,11 @@ class SonarStockApplicationTests {
     PriceProvider priceProvider;
     @Resource
     QuotesService quotesService;
+
+    @Test
+    void testKline() {
+        System.out.println(JSON.toJSONString(quotesService.queryKline("sz000068", 1), true));
+    }
 
     @Test
     void testBillString() {

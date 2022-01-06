@@ -29,4 +29,14 @@ public class QuotesController {
         return quotesService.queryBills(symbol);
     }
 
+    @GetMapping("/kline/{symbol}/{scale}")
+    @ApiOperation(value = "查询K线")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "symbol", value = "股票代码"),
+            @ApiImplicitParam(name = "scale", value = "分时类型")
+    })
+    public Result<Object> queryKline(@PathVariable("symbol") String symbol, @PathVariable("scale") int scale) {
+        return quotesService.queryKline(symbol, scale);
+    }
+
 }

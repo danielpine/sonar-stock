@@ -236,10 +236,7 @@ title {
             :i="layout[3].i"
             class="dragger"
           >
-            <div style="color: rgb(243, 239, 255)">
-              K-Line
-              {{ tradesData }}
-            </div>
+            <div style="width: 100%; height: 100%" id="kline"></div>
           </grid-item>
           <grid-item
             :x="layout[0].x"
@@ -248,6 +245,7 @@ title {
             :h="layout[0].h"
             :i="layout[0].i"
             class="dragger"
+            v-if="depthsData.name"
           >
             <el-row class="grid-head-info">
               <el-col :span="5">
@@ -327,7 +325,7 @@ title {
                   <p>{{ depthsData.open }}</p>
                 </el-row>
               </el-col>
-              <el-col :span="2">
+              <el-col :span="3">
                 <el-row class="grid-head-stock-title">
                   <p>Money</p>
                 </el-row>
@@ -368,6 +366,7 @@ title {
             :h="layout[1].h"
             :i="layout[1].i"
             class="dragger"
+            v-if="depthsData.stockEntriesMap"
           >
             <title class="sonar-stock-grid-draggable-handle">
               <p>Order Book</p>
@@ -471,56 +470,46 @@ title {
             :h="layout[2].h"
             :i="layout[2].i"
             class="dragger"
+            v-if="tradesData"
           >
-            <title class="sonar-stock-grid-draggable-handle">
-              <p>Order Book</p>
-            </title>
-            <el-row class="grid-row grid-border-bottom">
-              <el-col :span="8"><div class="grid-content">五档</div></el-col>
-              <el-col :span="8"><div class="grid-content">价格</div></el-col>
-              <el-col :span="8"><div class="grid-content">量</div></el-col>
+            <el-row>
+              <title class="sonar-stock-grid-draggable-handle">
+                <p>Trades</p>
+              </title>
+              <el-row class="grid-row grid-border-bottom">
+                <el-col :span="8"><div class="grid-content">时间</div></el-col>
+                <el-col :span="8"><div class="grid-content">价格</div></el-col>
+                <el-col :span="8"><div class="grid-content">量</div></el-col>
+              </el-row>
             </el-row>
-            <el-row class="grid-border-bottom">
-              <el-row class="grid-row-content" v-for="(i, j) in 5" :key="i">
+            <el-row class="grid-border-bottom" :style="getTradesLayHeight()">
+              <el-row
+                class="grid-row-content"
+                v-for="(j, i) in tradesData"
+                :key="i"
+              >
                 <el-col :span="8">
-                  <div class="grid-content">卖{{ 6 - i }}</div>
+                  <div class="grid-content">{{ j.ticktime }}</div>
                 </el-col>
                 <el-col :span="8">
                   <div
                     class="grid-content"
-                    :style="getOrderBookColor('ENTRY_SELL_' + (6 - i))"
+                    :style="getTradesPriceColor(j.price)"
                   >
-                    {{
-                      depthsData.stockEntriesMap
-                        ? depthsData.stockEntriesMap["ENTRY_SELL_" + (6 - i)]
-                            .value
-                        : "--"
-                    }}
+                    {{ j.price }}
                   </div>
                 </el-col>
                 <el-col :span="8">
-                  <div class="grid-content">
-                    <div class="progressbar-wrapper">
-                      {{
-                        depthsData.stockEntriesMap
-                          ? Math.round(
-                              depthsData.stockEntriesMap[
-                                "ENTRY_SELL_" + (6 - i)
-                              ].size / 100
-                            )
-                          : "--"
-                      }}
-                      <div
-                        class="progressbar sell-bg"
-                        :style="
-                          getOrderBookItemPercent('ENTRY_SELL_' + (6 - i))
-                        "
-                      ></div>
-                    </div>
+                  <div
+                    class="grid-content"
+                    :style="{ color: j.kind == 'D' ? 'green' : 'red' }"
+                  >
+                    {{ Math.round(j.volume / 100) }}
                   </div>
                 </el-col>
-              </el-row> </el-row
-          ></grid-item>
+              </el-row>
+            </el-row>
+          </grid-item>
         </grid-layout>
       </el-main>
       <el-aside class="sonar-place-order">
@@ -530,7 +519,7 @@ title {
         >
           <p>Place Order</p>
         </title>
-        <div style="padding: 0px 10px">
+        <div style="padding: 0px 10px" v-if="depthsData.name">
           <el-radio-group
             style="width: 330px; margin-top: 5px"
             size="small"
@@ -615,6 +604,7 @@ title {
 import "swiper/dist/css/swiper.css";
 import VueGridLayout from "vue-grid-layout";
 import NavHeader from "components/nav-header/nav-header";
+import * as LightweightCharts from "lightweight-charts";
 import { util } from "common/js/util";
 import { tradeApi } from "api/trade";
 import { homeApi } from "api/home";
@@ -641,9 +631,9 @@ export default {
       },
       layout: [
         { x: 0, y: 0, w: 12, h: 2, i: "0" },
-        { x: 12, y: 0, w: 2, h: 10, i: "1" },
+        { x: 12, y: 2, w: 2, h: 10, i: "1" },
         { x: 12, y: 10, w: 2, h: 10, i: "2" },
-        { x: 0, y: 0, w: 8, h: 18, i: "3" },
+        { x: 0, y: 2, w: 10, h: 20, i: "3" },
         // { x: 12, y: 0, w: 4, h: 9, i: "3" },
         // { x: 0, y: 1, w: 12, h: 2, i: "4" },
       ],
@@ -652,7 +642,7 @@ export default {
       responsive: true,
       index: 0,
       eventLog: [],
-      currentMarket: { symbol: "sz000068", title: "华控赛格" }, //当前市场
+      currentMarket: { symbol: "sz000612", title: "华控赛格" }, //当前市场
       timeStp: 0,
       //选项卡
       turnoverTbData: [], //成交记录
@@ -664,6 +654,7 @@ export default {
       bidsDepth: 0,
       //交易信息
       tradesData: [],
+      klineData: [],
       isUnfold: true,
       //交易面板
       userAccount: {
@@ -739,10 +730,11 @@ export default {
     });
   },
   mounted() {
+    this.symbol = this.$route.query.symbol;
     this.clearTimer();
     this._getMarkList();
-    this.symbol = this.$route.query.symbol;
     this._getDepth();
+    this._getKline();
     this.timer = window.setInterval(this.flashProcess, 3000);
   },
   destroyed() {
@@ -755,6 +747,147 @@ export default {
     this.clearTimer();
   },
   methods: {
+    initKline() {
+      let container = document.getElementById("kline");
+      console.log(container);
+      var chart = LightweightCharts.createChart(container, {
+        width: container.offsetWidth,
+        height: container.offsetHeight,
+        layout: {
+          textColor: "#d1d4dc",
+          backgroundColor: "#000000",
+        },
+        grid: {
+          vertLines: {
+            color: "rgba(255, 255, 255, 0.2)",
+          },
+          horzLines: {
+            color: "rgba(255, 255, 255, 0.2)",
+          },
+        },
+        rightPriceScale: {
+          borderColor: "rgba(255, 255, 255, 0.8)",
+        },
+        timeScale: {
+          borderColor: "rgba(255, 255, 255, 0.8)",
+          timeVisible:true,
+          // tickMarkFormatter: (time) => {
+          //   console.log(time)
+          //   return time;
+          // },
+        },
+        crosshair: {
+          mode: LightweightCharts.CrosshairMode.Normal,
+        },
+      });
+      var candleSeries = chart.addCandlestickSeries();
+      var data = this.klineData;
+      for (var i in this.klineData) {
+        let element = this.klineData[i];
+        element.time = new Date(element.day);
+      }
+      console.log(this);
+      console.log(this.klineData);
+      candleSeries.setData(data);
+
+      var lastClose = data[data.length - 1].close;
+      var lastIndex = data.length - 1;
+
+      var targetIndex = lastIndex + 105 + Math.round(Math.random() + 30);
+      var targetPrice = getRandomPrice();
+
+      var currentIndex = lastIndex + 1;
+      var currentBusinessDay = { day: 29, month: 5, year: 2019 };
+      var ticksInCurrentBar = 0;
+      var currentBar = {
+        open: null,
+        high: null,
+        low: null,
+        close: null,
+        time: currentBusinessDay,
+      };
+
+      function mergeTickToBar(price) {
+        if (currentBar.open === null) {
+          currentBar.open = price;
+          currentBar.high = price;
+          currentBar.low = price;
+          currentBar.close = price;
+        } else {
+          currentBar.close = price;
+          currentBar.high = Math.max(currentBar.high, price);
+          currentBar.low = Math.min(currentBar.low, price);
+        }
+        candleSeries.update(currentBar);
+      }
+
+      function reset() {
+        candleSeries.setData(data);
+        lastClose = data[data.length - 1].close;
+        lastIndex = data.length - 1;
+
+        targetIndex = lastIndex + 5 + Math.round(Math.random() + 30);
+        targetPrice = getRandomPrice();
+
+        currentIndex = lastIndex + 1;
+        currentBusinessDay = { day: 29, month: 5, year: 2019 };
+        ticksInCurrentBar = 0;
+      }
+
+      function getRandomPrice() {
+        return 10 + Math.round(Math.random() * 10000) / 100;
+      }
+
+      function nextBusinessDay(time) {
+        var d = new Date();
+        d.setUTCFullYear(time.year);
+        d.setUTCMonth(time.month - 1);
+        d.setUTCDate(time.day + 1);
+        d.setUTCHours(0, 0, 0, 0);
+        return {
+          year: d.getUTCFullYear(),
+          month: d.getUTCMonth() + 1,
+          day: d.getUTCDate(),
+        };
+      }
+
+      // setInterval(function () {
+      //   var deltaY = targetPrice - lastClose;
+      //   var deltaX = targetIndex - lastIndex;
+      //   var angle = deltaY / deltaX;
+      //   var basePrice = lastClose + (currentIndex - lastIndex) * angle;
+      //   var noise = 0.1 - Math.random() * 0.2 + 1.0;
+      //   var noisedPrice = basePrice * noise;
+      //   mergeTickToBar(noisedPrice);
+      //   if (++ticksInCurrentBar === 5) {
+      //     // move to next bar
+      //     currentIndex++;
+      //     currentBusinessDay = nextBusinessDay(currentBusinessDay);
+      //     currentBar = {
+      //       open: null,
+      //       high: null,
+      //       low: null,
+      //       close: null,
+      //       time: currentBusinessDay,
+      //     };
+      //     ticksInCurrentBar = 0;
+      //     if (currentIndex === 5000) {
+      //       reset();
+      //       return;
+      //     }
+      //     if (currentIndex === targetIndex) {
+      //       // change trend
+      //       lastClose = noisedPrice;
+      //       lastIndex = currentIndex;
+      //       targetIndex = lastIndex + 5 + Math.round(Math.random() + 30);
+      //       targetPrice = getRandomPrice();
+      //     }
+      //   }
+      // }, 200);
+    },
+    getTradesLayHeight() {
+      return { height: "calc(100% - 64px)", overflow: "auto" };
+    },
     flashProcess() {
       this._getDepth();
       this._getTrades();
@@ -776,12 +909,12 @@ export default {
     moveEvent: function (i, newX, newY) {
       const msg = "MOVE i=" + i + ", X=" + newX + ", Y=" + newY;
       this.eventLog.push(msg);
-      console.log(msg);
+      // console.log(msg);
     },
     movedEvent: function (i, newX, newY) {
       const msg = "MOVED i=" + i + ", X=" + newX + ", Y=" + newY;
       this.eventLog.push(msg);
-      console.log(msg);
+      // console.log(msg);
     },
     resizeEvent: function (i, newH, newW, newHPx, newWPx) {
       const msg =
@@ -796,7 +929,7 @@ export default {
         ", W(px)=" +
         newWPx;
       this.eventLog.push(msg);
-      console.log(msg);
+      // console.log(msg);
     },
     resizedEvent: function (i, newX, newY, newHPx, newWPx) {
       const msg =
@@ -811,7 +944,7 @@ export default {
         ", W(px)=" +
         newWPx;
       this.eventLog.push(msg);
-      console.log(msg);
+      // console.log(msg);
     },
     containerResizedEvent: function (i, newH, newW, newHPx, newWPx) {
       const msg =
@@ -826,40 +959,46 @@ export default {
         ", W(px)=" +
         newWPx;
       this.eventLog.push(msg);
-      console.log(msg);
+      // console.log(msg);
     },
     layoutCreatedEvent: function (newLayout) {
       this.eventLog.push("Created layout");
-      console.log("Created layout: ", newLayout);
+      // console.log("Created layout: ", newLayout);
     },
     layoutBeforeMountEvent: function (newLayout) {
       this.eventLog.push("beforeMount layout");
-      console.log("beforeMount layout: ", newLayout);
+      // console.log("beforeMount layout: ", newLayout);
     },
     layoutMountedEvent: function (newLayout) {
       this.eventLog.push("Mounted layout");
-      console.log("Mounted layout: ", newLayout);
+      // console.log("Mounted layout: ", newLayout);
     },
     layoutReadyEvent: function (newLayout) {
       this.eventLog.push("Ready layout");
-      console.log("Ready layout: ", newLayout);
+      // console.log("Ready layout: ", newLayout);
     },
     layoutUpdatedEvent: function (newLayout) {
       this.eventLog.push("Updated layout");
-      console.log("Updated layout: ", newLayout);
+      // console.log("Updated layout: ", newLayout);
     },
     async _getDepth() {
       let symbol = this.currentMarket.symbol.toLowerCase();
       let mergeDepth = this.chooseMergeDepth;
       let res = await tradeApi.getDepth(symbol, mergeDepth);
       this.depthsData = res.data;
-      console.log(this.depthsData);
-      this.processDepthData();
+      // console.log(this.depthsData);
+      // this.processDepthData();
     },
     async _getTrades() {
       let symbol = this.currentMarket.symbol;
       let res = await tradeApi.getTrades(symbol);
       this.tradesData = res.data;
+    },
+    async _getKline() {
+      let symbol = this.currentMarket.symbol;
+      let res = await tradeApi.getKline(symbol, 1);
+      this.klineData = res.data;
+      window.setTimeout(this.initKline, 500);
     },
     scientificToNumber(value) {
       return util.scientificToNumber(value);
@@ -956,13 +1095,13 @@ export default {
     },
     // 延迟2s刷新接口
     refreshRecord() {
-      console.log("刷新4接口");
+      // console.log("刷新4接口");
       //刷新自己的交易记录和委托记录 socket会推送消息过来
 
       // this._serverGetTurnoverOrderList();
       // this._serverGetEntrustOrderList();
 
-      console.log("当前Symbol", this.currentMarket.symbol);
+      // console.log("当前Symbol", this.currentMarket.symbol);
       this._getUserAccount(this.currentMarket.symbol);
     },
     async handleClick(tab) {
@@ -1026,7 +1165,7 @@ export default {
     //      },
     marketChange(currentMarket) {
       this.currentMarket = currentMarket;
-      console.log("marketChange", currentMarket);
+      // console.log("marketChange", currentMarket);
       this.switchMarketListDropdown = false;
       this.timeStp = new Date().getTime();
       //依赖marketId
@@ -1058,7 +1197,7 @@ export default {
         };
       }
 
-      console.log("---------------------费率", this.buyRate, this.sellRate);
+      // console.log("---------------------费率", this.buyRate, this.sellRate);
 
       this.currentSellItem.price = "";
       this.currentSellItem.amount = "";
@@ -1335,7 +1474,7 @@ export default {
             this.token
           )
           .then((res) => {
-            console.log("历史委托：", res);
+            // console.log("历史委托：", res);
             let result = res.data;
             this.turnoverPageQuery.page = result.current;
             this.turnoverPageQuery.totalRecords = result.total;
@@ -1354,7 +1493,7 @@ export default {
         let result = res.data;
         this.entrustPageQuery.page = result.current;
         this.entrustPageQuery.totalRecords = result.total;
-        console.log("未完成委托：", result);
+        // console.log("未完成委托：", result);
         this.entrustTbData = result.records;
       }
     },
@@ -1383,7 +1522,7 @@ export default {
         } else {
           this.marketList = res.data;
         }
-        console.log("全部市场", this.marketList);
+        // console.log("全部市场", this.marketList);
         this.activeName = this.marketList[0].areaName;
         this.subscribeMarkets(this.activeName);
         this.currentMarket = this.marketList[0].markets[0];
@@ -1438,7 +1577,7 @@ export default {
         let sell = 0;
         for (var i in this.depthsData.stockEntries) {
           let stock = this.depthsData.stockEntries[i];
-          console.log(stock);
+          // console.log(stock);
           if (stock.type == "SELL") {
             sell += stock.size;
           } else {
@@ -1449,10 +1588,25 @@ export default {
       }
       return { width: "50%" };
     },
+    getTradesPriceColor(curr) {
+      if (this.depthsData.close) {
+        let close = this.depthsData.close;
+        if (curr > close) {
+          return {
+            color: "red",
+          };
+        } else if (curr < close) {
+          return {
+            color: "green",
+          };
+        }
+      }
+      return {};
+    },
     getOrderBookColor(key) {
       if (this.depthsData.stockEntriesMap) {
-        let curr = this.depthsData.stockEntriesMap[key].value;
         let close = this.depthsData.close;
+        let curr = this.depthsData.stockEntriesMap[key].value;
         if (curr > close) {
           return {
             color: "red",
@@ -1499,7 +1653,7 @@ export default {
             bidPrice * sellAmount * (1 + sellFeeRate).toFixed(numScale);
         }
       }
-      // console.log("深度数据",asks,bids)
+      // // console.log("深度数据",asks,bids)
       this.domWidth = document.querySelector("#depth-data-item").clientWidth;
       this.asksDepth = this.bidsDepth = 0;
       for (let i = 0; i < asks.length; i++) {
@@ -1522,7 +1676,7 @@ export default {
       let symbol = this.currentMarket.symbol.toLowerCase();
       this.$socket.subscribe(`market.${symbol}.trade.detail`, "market-trade");
       this.$socket.on("market-trade", (data) => {
-        // console.log("成交记录",data)
+        // // console.log("成交记录",data)
         this.tradesData = data.data;
       });
     },
@@ -1541,13 +1695,13 @@ export default {
     subscribeAllMarkets() {
       this.$socket.subscribe("market.ticker", "all-market-area");
       this.$socket.on("all-market-area", (data) => {
-        // console.log("全部市场订阅", data)
+        // // console.log("全部市场订阅", data)
         if (data.markets) {
           let filteredFavorites = data.markets.filter((item) => {
             let itemSymbol = item.symbol.toLowerCase();
             return this.userFavorites.indexOf(itemSymbol) !== -1;
           });
-          // console.log("过滤后的",filteredFavorites )
+          // // console.log("过滤后的",filteredFavorites )
           let len = this.marketList.length;
           this.marketList[len - 1].markets = filteredFavorites;
         }
@@ -1560,7 +1714,7 @@ export default {
     subscribeMarkets(market) {
       this.$socket.subscribe(this.subscribePath(market), "market-area");
       this.$socket.on("market-area", (data) => {
-        // console.log("所有市场socket:",data)
+        // // console.log("所有市场socket:",data)
         let index = this.activeIndex;
         this.marketList[index].markets = data.markets;
       });
@@ -1576,7 +1730,7 @@ export default {
         this.token
       );
       this.$socket.on("order-pending", (data) => {
-        // console.log("未完成委托事件", data)
+        // // console.log("未完成委托事件", data)
         this._serverGetEntrustOrderList();
       });
     },
@@ -1591,7 +1745,7 @@ export default {
         this.token
       );
       this.$socket.on("order-finished", (data) => {
-        // console.log("成交记录事件", data)
+        // // console.log("成交记录事件", data)
         this._serverGetTurnoverOrderList();
       });
     },
