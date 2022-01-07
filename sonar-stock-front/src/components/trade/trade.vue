@@ -227,6 +227,7 @@ title {
           :is-draggable="draggable"
           :is-resizable="resizable"
           :responsive="responsive"
+          @layout-ready="layoutReadyEvent"
         >
           <grid-item
             :x="layout[3].x"
@@ -771,7 +772,7 @@ export default {
     this.clearTimer();
   },
   methods: {
-    initKline() {
+    createChart() {
       let container = document.getElementById("kline");
       this.chart = LightweightCharts.createChart(container, {
         width: container.offsetWidth,
@@ -823,7 +824,7 @@ export default {
       if (this.chart) {
         // nothing
       } else {
-        this.initKline();
+        this.createChart();
       }
       var chart = this.chart;
       var series = this.series;
@@ -974,7 +975,7 @@ export default {
     },
     layoutCreatedEvent: function (newLayout) {
       this.eventLog.push("Created layout");
-      // console.log("Created layout: ", newLayout);
+      console.log("Created layout: ", newLayout);
     },
     layoutBeforeMountEvent: function (newLayout) {
       this.eventLog.push("beforeMount layout");
@@ -986,7 +987,8 @@ export default {
     },
     layoutReadyEvent: function (newLayout) {
       this.eventLog.push("Ready layout");
-      // console.log("Ready layout: ", newLayout);
+      this.createChart();
+      console.log("Ready layout: ", newLayout);
     },
     layoutUpdatedEvent: function (newLayout) {
       this.eventLog.push("Updated layout");
