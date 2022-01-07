@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.text.ParseException;
 
 
 @RestController
@@ -35,7 +36,7 @@ public class QuotesController {
             @ApiImplicitParam(name = "symbol", value = "股票代码"),
             @ApiImplicitParam(name = "scale", value = "分时类型")
     })
-    public Result<Object> queryKline(@PathVariable("symbol") String symbol, @PathVariable("scale") int scale) {
+    public Result<Object> queryKline(@PathVariable("symbol") String symbol, @PathVariable("scale") int scale) throws ParseException {
         return quotesService.queryKline(symbol, scale);
     }
 

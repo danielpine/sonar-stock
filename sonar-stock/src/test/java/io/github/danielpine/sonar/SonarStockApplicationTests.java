@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 
 import javax.annotation.Resource;
 import java.nio.charset.Charset;
+import java.text.ParseException;
 
 @SpringBootTest
 class SonarStockApplicationTests {
@@ -25,7 +26,7 @@ class SonarStockApplicationTests {
     QuotesService quotesService;
 
     @Test
-    void testKline() {
+    void testKline() throws ParseException {
         System.out.println(JSON.toJSONString(quotesService.queryKline("sz000068", 1), true));
     }
 
